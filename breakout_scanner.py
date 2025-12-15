@@ -48,11 +48,12 @@ load_dotenv()
 
 FMP_API_KEY = os.getenv("FMP_API_KEY")
 TWELVE_DATA_API_KEY = os.getenv("TWELVE_DATA_API_KEY")
+ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY", "LFFBABGTSL3S1295") # Default fallback if env missing
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 if not FMP_API_KEY and not TWELVE_DATA_API_KEY:
-    raise RuntimeError("At least one API key (FMP or Twelve Data) must be set in .env file.")
+    raise RuntimeError("At least one primary API key (FMP or Twelve Data) must be set in .env file.")
 
 USE_TELEGRAM = bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)
 
@@ -353,6 +354,7 @@ def main():
     api_client = TripleAPIClient(
         fmp_api_key=FMP_API_KEY,
         twelve_data_key=TWELVE_DATA_API_KEY,
+        alpha_vantage_key=ALPHA_VANTAGE_API_KEY,
         cache_ttl_minutes={
             "1min": 2,   # 2 min cache for 1min data (more aggressive)
             "5min": 5,   # 5 min cache for 5min data (more aggressive)
@@ -361,8 +363,9 @@ def main():
     )
     print("✅ Triple API client initialized")
     print("   Tier 1: FMP (250 calls/day)")
-    print("   Tier 2: Twelve Data (800 calls/MONTH - ~25/day conservative limit)")
-    print("   Tier 3: Yahoo Finance (unlimited, FREE)")
+    print("   Tier 2: Twelve Data (800 calls/MONTH)")
+    print("   Tier 3: Alpha Vantage (Fallback)")
+    print("   Tier 4: Yahoo Finance (unlimited, FREE)")
     
     # Show initial API stats
     stats = api_client.get_stats()
